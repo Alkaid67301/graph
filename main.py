@@ -3,10 +3,12 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+#import numpy as np
 import sys, os
 
 nowPath = str(os.getcwd())
 os.chdir(nowPath)
+font = 'Arial'
 
 class MyApp(QWidget):
 
@@ -16,7 +18,7 @@ class MyApp(QWidget):
 
     def initUI(self):
         help = QLabel('다수의 값은 항상 띄어쓰기로 구분해 입력해주세요.', self)
-        help2 = QLabel('아래 버튼을 눌러 그래프 값을 입력해주세요.', self)
+        help2 = QLabel('아래 버튼을 눌러 그래프 값을 입력해주세요.\n한글을 입력하면 깨져 보일 수 있습니다. ', self)
 
         input_btn =  QPushButton('INPUT', self)
         input_btn.toggle()
@@ -32,7 +34,11 @@ class MyApp(QWidget):
         self.fig = plt.Figure()
         self.canvas = FigureCanvas(self.fig)
 
-        #file = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
+        name = QLabel('저장할 이미지의 이름을 아래에 적어주세요:', self)
+        self.nameEdit = QLineEdit(self)
+        sumb_btn = QPushButton('EXPORT IMAGE', self)
+        sumb_btn.clicked.connect(self.export_image)
+
         vbox = QVBoxLayout()
         vbox.addStretch(1)
         vbox.addWidget(self.rbtn1)
@@ -44,6 +50,10 @@ class MyApp(QWidget):
         vbox.addWidget(help)
         vbox.addWidget(help2)
         vbox.addWidget(input_btn)
+        vbox.addStretch(2)
+        vbox.addWidget(name)
+        vbox.addWidget(self.nameEdit)
+        vbox.addWidget(sumb_btn)
         vbox.addStretch(1)
 
         grid = QGridLayout()
@@ -75,7 +85,7 @@ class MyApp(QWidget):
         if self.rbtn1.isChecked() == True:
             self.Line_input_value()
         #elif self.rbtn2.isChecked():
-            #self.Line_input_value()
+            #self.Bar_input_value()
         #elif self.rbtn3.isChecked():
             #self.Pie_input_value()
         elif self.rbtn4.isChecked() == True:
@@ -117,13 +127,16 @@ class MyApp(QWidget):
             valueList.append(list)
 
         returnList = [graphName, num, xLabel, valueName, valueList]
-
+        #print(returnList)
         self.LineGraphGen(returnList)
 
     def LineGraphGen(self, returnList):
         self.fig.clear()
+        plt.clf()
         ax = self.fig.add_subplot(111)
         ax.set_title = returnList[0]
+
+        plt.title = returnList[0]
         value_num = len(returnList[2])
         xvalue = []
         yvalue = []
@@ -135,15 +148,18 @@ class MyApp(QWidget):
                 yval.append(int(returnList[4][i][j]))
             xvalue.append(xval)
             yvalue.append(yval)
-        print(xvalue, yvalue)
+        #print(xvalue, yvalue)
         colors = 'r g b c m y k'.split()
-        print(colors)
+        #print(colors)
         for i in range(returnList[1]):
-            print(xvalue[i], yvalue[i])
+            #print(xvalue[i], yvalue[i])
             ax.plot(xvalue[i], yvalue[i], c = colors[i], label = returnList[3][i])
+            plt.plot(xvalue[i], yvalue[i], c = colors[i], label = returnList[3][i])
 
         ax.legend(loc='upper right')
         ax.grid()
+        plt.legend(loc='upper right')
+        plt.grid()
         #print('Fine!')
         self.canvas.draw()
 
@@ -196,15 +212,17 @@ class MyApp(QWidget):
 
     def DotGraphGen(self, returnList):
         self.fig.clear()
-        print('Fine')
-        gr = self.fig.add_subplot(111)
-        gr.set_title = returnList[0]
-        print('Fine')
+        plt.clf()
+        #print('Fine')
+        ax = self.fig.add_subplot(111)
+        ax.set_title = returnList[0]
+
+        plt.title = returnList[0]
         value_num = len(returnList[2])
         xvalue = []
         yvalue = []
         sizevalue = []
-        print('Fine')
+        #print('Fine')
         for j in range(value_num):
             xvalue.append(int(returnList[1][j]))
             yvalue.append(int(returnList[2][j]))
@@ -212,16 +230,23 @@ class MyApp(QWidget):
         colors = 'r g b c m y k'.split()
         if len(xvalue) != 7:
             colors = colors[0:len(xvalue)]
-        print('Fine')
+        #print('Fine')
 
-        print(xvalue, yvalue, sizevalue, colors)
-        gr.scatter(x = xvalue, y = yvalue, s = sizevalue, c = colors, alpha = 0.5)
-        print('Fine')
+        #print(xvalue, yvalue, sizevalue, colors)
+        ax.scatter(x = xvalue, y = yvalue, s = sizevalue, c = colors, alpha = 0.5)
+        plt.scatter(x = xvalue, y = yvalue, s = sizevalue, c = colors, alpha = 0.5)
+        #print('Fine')
 
         #gr.legend(loc='upper right')
-        gr.grid()
+        ax.grid()
+        plt.grid()
         #print('Fine!')
         self.canvas.draw()
+
+    def export_image(self):
+        file = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
+        plt.savefig(file + '\\' + self.nameEdit.text())
+        QMessageBox.question(self, '완료', '해당 경로에 저장되었습니다.', QMessageBox.Yes)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
