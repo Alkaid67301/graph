@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import *
+#printfrom PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 import matplotlib.pyplot as plt
@@ -17,8 +17,8 @@ class MyApp(QWidget):
         self.initUI()
 
     def initUI(self):
-        help = QLabel('Please tell apart each value by space.', self)
-        help2 = QLabel('If you want to input graph values, please click button below.\nIt can be not seen if you input language except English. ', self)
+        help = QLabel('다수의 값은 항상 띄어쓰기로 구분해 입력해주세요.', self)
+        help2 = QLabel('아래 버튼을 눌러 그래프 값을 입력해주세요.\n한글을 입력하면 깨져 보일 수 있습니다. ', self)
 
         input_btn =  QPushButton('INPUT', self)
         input_btn.toggle()
@@ -34,7 +34,7 @@ class MyApp(QWidget):
         self.fig = plt.Figure()
         self.canvas = FigureCanvas(self.fig)
 
-        name = QLabel('Write the name of Image you want to save below:', self)
+        name = QLabel('저장할 이미지의 이름을 아래에 적어주세요:', self)
         self.nameEdit = QLineEdit(self)
         sumb_btn = QPushButton('EXPORT IMAGE', self)
         sumb_btn.clicked.connect(self.export_image)
@@ -68,7 +68,7 @@ class MyApp(QWidget):
         self.show()
 
     def closeEvent(self, event):
-        reply = QMessageBox.question(self, 'Exit', 'Are you sure?', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        reply = QMessageBox.question(self, '종료', '정말 종료하시겠습니까?', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 
         if reply == QMessageBox.Yes:
             event.accept()
@@ -95,40 +95,40 @@ class MyApp(QWidget):
             #self.Line_input_value()
 
     def Line_input_value(self):
-        graphName, ok = QInputDialog.getText(self, 'Name', 'Please enter a name for the graph.h: ')
+        graphName, ok = QInputDialog.getText(self, 'Name', '그래프의 이름을 입력해주세요: ')
         a = True
         while a:
-            num, ok = QInputDialog.getInt(self, 'Value', 'Number of the kind of values you want to input(integer bigger than 0): ')
+            num, ok = QInputDialog.getInt(self, 'Value', '입력할 값 종류의 수(정수): ')
             if num <= 0:
-                QMessageBox.question(self, 'Error', 'The value must be the integer between 1 and 7.', QMessageBox.Yes)
+                QMessageBox.question(self, '오류', '입력할 값은 1 이상, 7 이하의 정수여야 합니다.', QMessageBox.Yes)
             else:
                 a = False
         a = True
         while a:
-            x, ok = QInputDialog.getText(self, 'Value', 'Please input x axis values seperated by space: ')
+            x, ok = QInputDialog.getText(self, 'Value', 'x축 값을 순서대로 띄어쓰기로 구분해 입력해주세요: ')
             xLabel = x.split()
             if len(xLabel) == 0:
-                QMessageBox.question(self, 'Error', 'Please enter at least one x-axis value.', QMessageBox.Yes)
+                QMessageBox.question(self, '오류', 'x축 값을 하나 이상 입력해주세요.', QMessageBox.Yes)
             else:
                 a = False
         #print(xLabel)
         valueName = []
         valueList = []
         for i in range(num):
-            name, ok = QInputDialog.getText(self, 'Name', 'Please input name of values:')
+            name, ok = QInputDialog.getText(self, 'Name', '값의 이름을 입력하세요:')
             valueName.append(name)
             a = True
             while a:
-                list, ok = QInputDialog.getText(self, 'Value', 'Enter y-axis value separated by spacing.\n(Please enter an integer only, the number must match the x-axis label): ')
+                list, ok = QInputDialog.getText(self, 'Value', 'y축 값을 띄어쓰기로 구분해 입력해주세요\n(정수만 입력해주세요, x축 라벨과 수가 일치해야 합니다): ')
                 list = list.split()
                 if len(xLabel) == len(list):
                     a = False
                 else:
-                    QMessageBox.question(self, 'Error', 'Please check if the total number of values entered is %s.' %len(xLabel), QMessageBox.Yes)
+                    QMessageBox.question(self, '오류', '값이 총 %s개가 맞는지 확인해주세요' %len(xLabel), QMessageBox.Yes)
             valueList.append(list)
 
         returnList = [graphName, num, xLabel, valueName, valueList]
-        #print(returnList)
+        ##print(returnList)
         self.LineGraphGen(returnList)
 
     def LineGraphGen(self, returnList):
@@ -154,8 +154,8 @@ class MyApp(QWidget):
         #print(colors)
         for i in range(returnList[1]):
             #print(xvalue[i], yvalue[i])
-            ax.plot(xvalue[i], yvalue[i], c = colors[i], marker = "o", label = returnList[3][i])
-            plt.plot(xvalue[i], yvalue[i], c = colors[i], marker = "o", label = returnList[3][i])
+            ax.plot(xvalue[i], yvalue[i], c = colors[i], label = returnList[3][i])
+            plt.plot(xvalue[i], yvalue[i], c = colors[i], label = returnList[3][i])
 
         ax.legend(loc='upper right')
         ax.grid()
@@ -165,46 +165,46 @@ class MyApp(QWidget):
         self.canvas.draw()
 
     def Dot_input_value(self):
-        graphName, ok = QInputDialog.getText(self, 'Name', 'Please enter a name for the graph.: ')
+        graphName, ok = QInputDialog.getText(self, 'Name', '그래프의 이름을 입력해주세요: ')
 
         a = True
         while a:
-            x, ok = QInputDialog.getText(self, 'Value', 'Enter the x-axis values separated by spacing in order.\n (7 or less, please enter an integer only): ')
+            x, ok = QInputDialog.getText(self, 'Value', 'x축 값을 순서대로 띄어쓰기로 구분해 입력해주세요\n(7개 이하, 정수만 입력해주세요): ')
             xLabel = x.split()
             if len(xLabel) == 0:
-                QMessageBox.question(self, 'Error', 'Please enter at least one x-axis value.', QMessageBox.Yes)
+                QMessageBox.question(self, '오류', 'x축 값을 하나 이상 입력해주세요.', QMessageBox.Yes)
             else:
                 a = False
         #print(xLabel)
         a = True
         while a:
-            list, ok = QInputDialog.getText(self, 'Value', 'Enter y-axis value separated by spacing.\n(Please enter an integer only, the x-axis value and number must match): ')
+            list, ok = QInputDialog.getText(self, 'Value', 'y축 값을 띄어쓰기로 구분해 입력해주세요\n(정수만 입력해주세요, x축 값과 수가 일치해야 합니다): ')
             list = list.split()
             if len(xLabel) == len(list):
                 yLabel = list
                 a = False
             else:
-                QMessageBox.question(self, 'Error', 'Please check if the total price is %s.' %len(xLabel), QMessageBox.Yes)
+                QMessageBox.question(self, '오류', '값이 총 %s개가 맞는지 확인해주세요' %len(xLabel), QMessageBox.Yes)
 
         a = True
         while a:
-            list, ok = QInputDialog.getText(self, 'Value', 'Enter the names of the values separated by spacing\n(the x-axis value and number must match): ')
+            list, ok = QInputDialog.getText(self, 'Value', '값의 이름들을 띄어쓰기로 구분해 입력해주세요\n(x축 값과 수가 일치해야 합니다): ')
             list = list.split()
             if len(xLabel) == len(list):
                 nameList = list
                 a = False
             else:
-                QMessageBox.question(self, 'Error', 'Please check if the total price is %s.' %len(xLabel), QMessageBox.Yes)
+                QMessageBox.question(self, '오류', '값이 총 %s개가 맞는지 확인해주세요' %len(xLabel), QMessageBox.Yes)
 
         a = True
         while a:
-            list, ok = QInputDialog.getText(self, 'Value', 'Enter the size of the value separated by spacing.\n(Please enter an integer only, the x-axis value and number must match): ')
+            list, ok = QInputDialog.getText(self, 'Value', '값의 크기들을 띄어쓰기로 구분해 입력해주세요\n(정수만 입력해주세요, x축 값과 수가 일치해야 합니다): ')
             list = list.split()
             if len(xLabel) == len(list):
                 sizeList = list
                 a = False
             else:
-                QMessageBox.question(self, 'Error', 'Please check if the total price is %s.' %len(xLabel), QMessageBox.Yes)
+                QMessageBox.question(self, '오류', '값이 총 %s개가 맞는지 확인해주세요' %len(xLabel), QMessageBox.Yes)
 
         returnList = [graphName, xLabel, yLabel, nameList, sizeList]
         #print(returnList)
@@ -247,7 +247,7 @@ class MyApp(QWidget):
     def export_image(self):
         file = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
         plt.savefig(file + '\\' + self.nameEdit.text())
-        QMessageBox.question(self, 'Done', 'It has been saved to that path.', QMessageBox.Yes)
+        QMessageBox.question(self, '완료', '해당 경로에 저장되었습니다.', QMessageBox.Yes)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
