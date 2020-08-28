@@ -1,8 +1,12 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-import pygal  as pg
-import sys
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+import sys, os
+
+nowPath = str(os.getcwd())
+os.chdir(nowPath)
 
 class MyApp(QWidget):
 
@@ -13,30 +17,29 @@ class MyApp(QWidget):
     def initUI(self):
         help = QLabel('다수의 값은 항상 띄어쓰기로 구분해 입력해주세요.', self)
         help2 = QLabel('아래 버튼을 눌러 그래프 값을 입력해주세요.', self)
-        graph = QPixmap('graph.png')
-
-        lbl_img = QLabel()
-        lbl_img.setPixmap(graph)
 
         input_btn =  QPushButton('INPUT', self)
         input_btn.toggle()
         input_btn.clicked.connect(self.input_value)
 
-        rbtn1 = QRadioButton('Line Graph', self)
-        rbtn1.setChecked(True)
-        rbtn2 = QRadioButton('Bar Graph', self)
-        rbtn3 = QRadioButton('Pie Graph', self)
-        rbtn4 = QRadioButton('Dot Graph', self)
-        rbtn5 = QRadioButton('Funnel Graph', self)
+        self.rbtn1 = QRadioButton('Line Graph', self)
+        self.rbtn1.setChecked(True)
+        #self.rbtn2 = QRadioButton('Bar Graph', self)
+        #self.rbtn3 = QRadioButton('Pie Graph', self)
+        self.rbtn4 = QRadioButton('Dot Graph', self)
+        #self.rbtn5 = QRadioButton('Funnel Graph', self)
+
+        self.fig = plt.Figure()
+        self.canvas = FigureCanvas(self.fig)
 
         #file = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
         vbox = QVBoxLayout()
         vbox.addStretch(1)
-        vbox.addWidget(rbtn1)
-        vbox.addWidget(rbtn2)
-        vbox.addWidget(rbtn3)
-        vbox.addWidget(rbtn4)
-        vbox.addWidget(rbtn5)
+        vbox.addWidget(self.rbtn1)
+        #vbox.addWidget(self.rbtn2)
+        #vbox.addWidget(self.rbtn3)
+        vbox.addWidget(self.rbtn4)
+        #vbox.addWidget(self.rbtn5)
         vbox.addStretch(1)
         vbox.addWidget(help)
         vbox.addWidget(help2)
@@ -45,7 +48,7 @@ class MyApp(QWidget):
 
         grid = QGridLayout()
         self.setLayout(grid)
-        grid.addWidget(lbl_img, 0, 0)
+        grid.addWidget(self.canvas, 0, 0)
         grid.addLayout(vbox, 0, 1)
 
         self.setWindowTitle('Graph generator')
@@ -68,12 +71,35 @@ class MyApp(QWidget):
         self.move(qr.topLeft())
 
     def input_value(self):
-        QMessageBox.question(self, '오류', '값이 총 %s개가 맞는지 확인해주세요' %len(xLabel), QMessageBox.Yes)
+        print(self.rbtn1.isChecked())
+        if self.rbtn1.isChecked() == True:
+            self.Line_input_value()
+        #elif self.rbtn2.isChecked():
+            #self.Line_input_value()
+        #elif self.rbtn3.isChecked():
+            #self.Pie_input_value()
+        elif self.rbtn4.isChecked() == True:
+            self.Dot_input_value()
+        #elif self.rbtn5.isChecked():
+            #self.Line_input_value()
 
     def Line_input_value(self):
-        num, ok = QInputDialog.getInt(self, 'Value', '입력할 값 종류의 수(정수): ')
-        x, ok = QInputDialog.getText(self, 'Value', 'x축 라벨을 순서대로 띄어쓰기로 구분해 입력해주세요: ')
-        xLabel = x.split()
+        graphName, ok = QInputDialog.getText(self, 'Name', '그래프의 이름을 입력해주세요: ')
+        a = True
+        while a:
+            num, ok = QInputDialog.getInt(self, 'Value', '입력할 값 종류의 수(정수): ')
+            if num <= 0:
+                QMessageBox.question(self, '오류', '입력할 값은 1 이상, 7 이하의 정수여야 합니다.', QMessageBox.Yes)
+            else:
+                a = False
+        a = True
+        while a:
+            x, ok = QInputDialog.getText(self, 'Value', 'x축 값을 순서대로 띄어쓰기로 구분해 입력해주세요: ')
+            xLabel = x.split()
+            if len(xLabel) == 0:
+                QMessageBox.question(self, '오류', 'x축 값을 하나 이상 입력해주세요.', QMessageBox.Yes)
+            else:
+                a = False
         print(xLabel)
         valueName = []
         valueList = []
@@ -82,13 +108,120 @@ class MyApp(QWidget):
             valueName.append(name)
             a = True
             while a:
-                list, ok = QInputDialog.getText(self, 'Value', '값을 띄어쓰기로 구분해 입력해주세요\n(x축 라벨과 수가 일치해야 합니다): ')
+                list, ok = QInputDialog.getText(self, 'Value', 'y축 값을 띄어쓰기로 구분해 입력해주세요\n(정수만 입력해주세요, x축 라벨과 수가 일치해야 합니다): ')
                 list = list.split()
                 if len(xLabel) == len(list):
                     a = False
                 else:
                     QMessageBox.question(self, '오류', '값이 총 %s개가 맞는지 확인해주세요' %len(xLabel), QMessageBox.Yes)
             valueList.append(list)
+
+        returnList = [graphName, num, xLabel, valueName, valueList]
+
+        self.LineGraphGen(returnList)
+
+    def LineGraphGen(self, returnList):
+        self.fig.clear()
+        ax = self.fig.add_subplot(111)
+        ax.set_title = returnList[0]
+        value_num = len(returnList[2])
+        xvalue = []
+        yvalue = []
+        for i in range(returnList[1]):
+            xval = []
+            yval = []
+            for j in range(value_num):
+                xval.append((returnList[2][j]))
+                yval.append(int(returnList[4][i][j]))
+            xvalue.append(xval)
+            yvalue.append(yval)
+        print(xvalue, yvalue)
+        colors = 'r g b c m y k'.split()
+        print(colors)
+        for i in range(returnList[1]):
+            print(xvalue[i], yvalue[i])
+            ax.plot(xvalue[i], yvalue[i], c = colors[i], label = returnList[3][i])
+
+        ax.legend(loc='upper right')
+        ax.grid()
+        #print('Fine!')
+        self.canvas.draw()
+
+    def Dot_input_value(self):
+        graphName, ok = QInputDialog.getText(self, 'Name', '그래프의 이름을 입력해주세요: ')
+
+        a = True
+        while a:
+            x, ok = QInputDialog.getText(self, 'Value', 'x축 값을 순서대로 띄어쓰기로 구분해 입력해주세요\n(7개 이하, 정수만 입력해주세요): ')
+            xLabel = x.split()
+            if len(xLabel) == 0:
+                QMessageBox.question(self, '오류', 'x축 값을 하나 이상 입력해주세요.', QMessageBox.Yes)
+            else:
+                a = False
+        print(xLabel)
+        a = True
+        while a:
+            list, ok = QInputDialog.getText(self, 'Value', 'y축 값을 띄어쓰기로 구분해 입력해주세요\n(정수만 입력해주세요, x축 값과 수가 일치해야 합니다): ')
+            list = list.split()
+            if len(xLabel) == len(list):
+                yLabel = list
+                a = False
+            else:
+                QMessageBox.question(self, '오류', '값이 총 %s개가 맞는지 확인해주세요' %len(xLabel), QMessageBox.Yes)
+
+        a = True
+        while a:
+            list, ok = QInputDialog.getText(self, 'Value', '값의 이름들을 띄어쓰기로 구분해 입력해주세요\n(x축 값과 수가 일치해야 합니다): ')
+            list = list.split()
+            if len(xLabel) == len(list):
+                nameList = list
+                a = False
+            else:
+                QMessageBox.question(self, '오류', '값이 총 %s개가 맞는지 확인해주세요' %len(xLabel), QMessageBox.Yes)
+
+        a = True
+        while a:
+            list, ok = QInputDialog.getText(self, 'Value', '값의 크기들을 띄어쓰기로 구분해 입력해주세요\n(정수만 입력해주세요, x축 값과 수가 일치해야 합니다): ')
+            list = list.split()
+            if len(xLabel) == len(list):
+                sizeList = list
+                a = False
+            else:
+                QMessageBox.question(self, '오류', '값이 총 %s개가 맞는지 확인해주세요' %len(xLabel), QMessageBox.Yes)
+
+        returnList = [graphName, xLabel, yLabel, nameList, sizeList]
+        print(returnList)
+
+        self.DotGraphGen(returnList)
+
+    def DotGraphGen(self, returnList):
+        self.fig.clear()
+        print('Fine')
+        gr = self.fig.add_subplot(111)
+        gr.set_title = returnList[0]
+        print('Fine')
+        value_num = len(returnList[2])
+        xvalue = []
+        yvalue = []
+        sizevalue = []
+        print('Fine')
+        for j in range(value_num):
+            xvalue.append(int(returnList[1][j]))
+            yvalue.append(int(returnList[2][j]))
+            sizevalue.append(int(returnList[4][j]))
+        colors = 'r g b c m y k'.split()
+        if len(xvalue) != 7:
+            colors = colors[0:len(xvalue)]
+        print('Fine')
+
+        print(xvalue, yvalue, sizevalue, colors)
+        gr.scatter(x = xvalue, y = yvalue, s = sizevalue, c = colors, alpha = 0.5)
+        print('Fine')
+
+        #gr.legend(loc='upper right')
+        gr.grid()
+        #print('Fine!')
+        self.canvas.draw()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
