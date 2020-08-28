@@ -62,6 +62,7 @@ class MyApp(QWidget):
         grid.addLayout(vbox, 0, 1)
 
         self.setWindowTitle('Graph generator')
+        self.setWindowIcon(QIcon('icon.png'))
         self.resize(1000, 600)
         self.center()
         self.show()
